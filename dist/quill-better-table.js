@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "b2ee69a9ed01aab8434c";
+/******/ 	var hotCurrentHash = "0c86fba503baa428d4c0";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -166,6 +166,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 			_declinedDependencies: {},
 /******/ 			_selfAccepted: false,
 /******/ 			_selfDeclined: false,
+/******/ 			_selfInvalidated: false,
 /******/ 			_disposeHandlers: [],
 /******/ 			_main: hotCurrentChildModule !== moduleId,
 /******/
@@ -195,6 +196,29 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 			removeDisposeHandler: function(callback) {
 /******/ 				var idx = hot._disposeHandlers.indexOf(callback);
 /******/ 				if (idx >= 0) hot._disposeHandlers.splice(idx, 1);
+/******/ 			},
+/******/ 			invalidate: function() {
+/******/ 				this._selfInvalidated = true;
+/******/ 				switch (hotStatus) {
+/******/ 					case "idle":
+/******/ 						hotUpdate = {};
+/******/ 						hotUpdate[moduleId] = modules[moduleId];
+/******/ 						hotSetStatus("ready");
+/******/ 						break;
+/******/ 					case "ready":
+/******/ 						hotApplyInvalidatedModule(moduleId);
+/******/ 						break;
+/******/ 					case "prepare":
+/******/ 					case "check":
+/******/ 					case "dispose":
+/******/ 					case "apply":
+/******/ 						(hotQueuedInvalidatedModules =
+/******/ 							hotQueuedInvalidatedModules || []).push(moduleId);
+/******/ 						break;
+/******/ 					default:
+/******/ 						// ignore requests in error states
+/******/ 						break;
+/******/ 				}
 /******/ 			},
 /******/
 /******/ 			// Management API
@@ -237,7 +261,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	var hotDeferred;
 /******/
 /******/ 	// The update info
-/******/ 	var hotUpdate, hotUpdateNewHash;
+/******/ 	var hotUpdate, hotUpdateNewHash, hotQueuedInvalidatedModules;
 /******/
 /******/ 	function toModuleId(id) {
 /******/ 		var isNumber = +id + "" === id;
@@ -252,7 +276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		hotSetStatus("check");
 /******/ 		return hotDownloadManifest(hotRequestTimeout).then(function(update) {
 /******/ 			if (!update) {
-/******/ 				hotSetStatus("idle");
+/******/ 				hotSetStatus(hotApplyInvalidatedModules() ? "ready" : "idle");
 /******/ 				return null;
 /******/ 			}
 /******/ 			hotRequestedFilesMap = {};
@@ -271,7 +295,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 			var chunkId = 2;
 /******/ 			// eslint-disable-next-line no-lone-blocks
 /******/ 			{
-/******/ 				/*globals chunkId */
 /******/ 				hotEnsureUpdateChunk(chunkId);
 /******/ 			}
 /******/ 			if (
@@ -346,6 +369,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		if (hotStatus !== "ready")
 /******/ 			throw new Error("apply() is only allowed in ready status");
 /******/ 		options = options || {};
+/******/ 		return hotApplyInternal(options);
+/******/ 	}
+/******/
+/******/ 	function hotApplyInternal(options) {
+/******/ 		hotApplyInvalidatedModules();
 /******/
 /******/ 		var cb;
 /******/ 		var i;
@@ -368,7 +396,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 				var moduleId = queueItem.id;
 /******/ 				var chain = queueItem.chain;
 /******/ 				module = installedModules[moduleId];
-/******/ 				if (!module || module.hot._selfAccepted) continue;
+/******/ 				if (
+/******/ 					!module ||
+/******/ 					(module.hot._selfAccepted && !module.hot._selfInvalidated)
+/******/ 				)
+/******/ 					continue;
 /******/ 				if (module.hot._selfDeclined) {
 /******/ 					return {
 /******/ 						type: "self-declined",
@@ -536,10 +568,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 				installedModules[moduleId] &&
 /******/ 				installedModules[moduleId].hot._selfAccepted &&
 /******/ 				// removed self-accepted modules should not be required
-/******/ 				appliedUpdate[moduleId] !== warnUnexpectedRequire
+/******/ 				appliedUpdate[moduleId] !== warnUnexpectedRequire &&
+/******/ 				// when called invalidate self-accepting is not possible
+/******/ 				!installedModules[moduleId].hot._selfInvalidated
 /******/ 			) {
 /******/ 				outdatedSelfAcceptedModules.push({
 /******/ 					module: moduleId,
+/******/ 					parents: installedModules[moduleId].parents.slice(),
 /******/ 					errorHandler: installedModules[moduleId].hot._selfAccepted
 /******/ 				});
 /******/ 			}
@@ -612,7 +647,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		// Now in "apply" phase
 /******/ 		hotSetStatus("apply");
 /******/
-/******/ 		hotCurrentHash = hotUpdateNewHash;
+/******/ 		if (hotUpdateNewHash !== undefined) {
+/******/ 			hotCurrentHash = hotUpdateNewHash;
+/******/ 			hotUpdateNewHash = undefined;
+/******/ 		}
+/******/ 		hotUpdate = undefined;
 /******/
 /******/ 		// insert new code
 /******/ 		for (moduleId in appliedUpdate) {
@@ -665,7 +704,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		for (i = 0; i < outdatedSelfAcceptedModules.length; i++) {
 /******/ 			var item = outdatedSelfAcceptedModules[i];
 /******/ 			moduleId = item.module;
-/******/ 			hotCurrentParents = [moduleId];
+/******/ 			hotCurrentParents = item.parents;
+/******/ 			hotCurrentChildModule = moduleId;
 /******/ 			try {
 /******/ 				__webpack_require__(moduleId);
 /******/ 			} catch (err) {
@@ -707,10 +747,33 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 			return Promise.reject(error);
 /******/ 		}
 /******/
+/******/ 		if (hotQueuedInvalidatedModules) {
+/******/ 			return hotApplyInternal(options).then(function(list) {
+/******/ 				outdatedModules.forEach(function(moduleId) {
+/******/ 					if (list.indexOf(moduleId) < 0) list.push(moduleId);
+/******/ 				});
+/******/ 				return list;
+/******/ 			});
+/******/ 		}
+/******/
 /******/ 		hotSetStatus("idle");
 /******/ 		return new Promise(function(resolve) {
 /******/ 			resolve(outdatedModules);
 /******/ 		});
+/******/ 	}
+/******/
+/******/ 	function hotApplyInvalidatedModules() {
+/******/ 		if (hotQueuedInvalidatedModules) {
+/******/ 			if (!hotUpdate) hotUpdate = {};
+/******/ 			hotQueuedInvalidatedModules.forEach(hotApplyInvalidatedModule);
+/******/ 			hotQueuedInvalidatedModules = undefined;
+/******/ 			return true;
+/******/ 		}
+/******/ 	}
+/******/
+/******/ 	function hotApplyInvalidatedModule(moduleId) {
+/******/ 		if (!Object.prototype.hasOwnProperty.call(hotUpdate, moduleId))
+/******/ 			hotUpdate[moduleId] = modules[moduleId];
 /******/ 	}
 /******/
 /******/ 	// The module cache
@@ -814,49 +877,49 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__0__;
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 336.64h526.628572v43.885714H73.142857zM73.142857 643.657143h526.628572v43.885714H73.142857zM336.457143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857h-219.428571v877.714286h219.428571a131.657143 131.657143 0 0 0 131.657143-131.657143V204.8A131.84 131.84 0 0 0 819.2 73.142857z m44.068571 460.982857h-65.828571v65.828572H753.371429v-65.828572h-65.828572V490.057143h65.828572v-65.828572h44.068571v65.828572h65.828571z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.99596 99.038384c-25.470707-25.6-60.121212-39.822222-96.323233-39.822222H194.19798c-36.072727 0-70.723232 14.351515-96.323233 39.822222-25.6 25.6-39.822222 60.121212-39.822222 96.323232v635.474748c0 36.072727 14.351515 70.723232 39.822222 96.323232C123.474747 952.759596 158.125253 967.111111 194.19798 967.111111h635.474747c36.072727 0 70.723232-14.351515 96.323233-39.951515 25.6-25.6 39.951515-60.121212 39.951515-96.323232V195.361616c0-36.072727-14.351515-70.723232-39.951515-96.323232z m-550.270707 5.559596h272.290909v227.167677H375.725253V104.59798z m56.242424 360.468687l31.935353-32.19394 48.09697 48.226263 48.09697-48.226263 32.193939 32.19394-48.09697 48.096969 48.226263 48.226263-32.193939 31.935354-48.226263-48.09697-48.226263 48.09697-31.935353-31.935354 48.226262-48.226263-48.096969-48.096969zM103.434343 195.361616c0-24.048485 9.567677-47.191919 26.634344-64.129293 17.066667-17.066667 40.080808-26.634343 64.129293-26.634343h136.145454v227.167677H103.434343V195.361616z m817.002021 635.733333c0 24.048485-9.567677 47.191919-26.634344 64.258586-17.066667 17.066667-40.080808 26.634343-64.129293 26.634344H194.19798c-24.048485 0-47.191919-9.567677-64.258586-26.634344C112.872727 878.157576 103.434343 855.014141 103.434343 830.836364V694.690909h226.909091v226.909091h45.381819V694.690909h272.290909v226.909091h45.381818V694.690909h226.909091v136.40404z m0-499.329292H693.527273V104.59798h136.145454c24.048485 0 47.191919 9.567677 64.129293 26.634343 17.066667 17.066667 26.634343 40.080808 26.634344 64.129293v136.404041z\"/></svg>";
 
 /***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M380.342857 336.457143h526.811429v43.885714H380.342857z m0 307.2h526.811429v43.885714H380.342857zM643.657143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.582857A131.474286 131.474286 0 0 1 950.857143 204.8v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.588571 87.771429v614.4a87.588571 87.588571 0 0 0 87.588571 87.771429h614.582857a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM204.8 73.142857A131.657143 131.657143 0 0 0 73.142857 204.8v614.4a131.657143 131.657143 0 0 0 131.657143 131.657143h219.428571V73.142857z m131.84 460.8h-65.828571v65.828572h-43.885715v-65.828572h-65.828571v-43.885714h65.828571v-65.828572h43.885715v65.828572h65.828571z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 336.64h526.628572v43.885714H73.142857zM73.142857 643.657143h526.628572v43.885714H73.142857zM336.457143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857h-219.428571v877.714286h219.428571a131.657143 131.657143 0 0 0 131.657143-131.657143V204.8A131.84 131.84 0 0 0 819.2 73.142857z m44.068571 460.982857h-65.828571v65.828572H753.371429v-65.828572h-65.828572V490.057143h65.828572v-65.828572h44.068571v65.828572h65.828571z\"/></svg>";
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 599.771429h877.714286v43.885714H73.142857zM336.457143 380.342857h43.885714v526.628572h-43.885714z m307.2 0h43.885714v526.628572h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.588571 87.588571 0 0 0 87.771429 87.771429h614.4a87.588571 87.588571 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857H204.8A131.657143 131.657143 0 0 0 73.142857 204.8v219.428571h877.714286v-219.428571A131.657143 131.657143 0 0 0 819.2 73.142857z m-219.428571 197.485714h-65.828572v65.828572h-43.885714v-65.828572h-65.828572v-43.885714h65.828572V160.914286h43.885714v65.828571h65.828572z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M380.342857 336.457143h526.811429v43.885714H380.342857z m0 307.2h526.811429v43.885714H380.342857zM643.657143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.582857A131.474286 131.474286 0 0 1 950.857143 204.8v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.588571 87.771429v614.4a87.588571 87.588571 0 0 0 87.588571 87.771429h614.582857a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM204.8 73.142857A131.657143 131.657143 0 0 0 73.142857 204.8v614.4a131.657143 131.657143 0 0 0 131.657143 131.657143h219.428571V73.142857z m131.84 460.8h-65.828571v65.828572h-43.885715v-65.828572h-65.828571v-43.885714h65.828571v-65.828572h43.885715v65.828572h65.828571z\"/></svg>";
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v44.068571H73.142857zM336.64 117.028571h43.885714v526.628572h-43.885714z m307.017143 0h44.068571v526.628572H643.657143zM73.142857 599.771429v219.428571a131.657143 131.657143 0 0 0 131.657143 131.657143h614.4a131.657143 131.657143 0 0 0 131.657143-131.657143v-219.428571z m526.628572 197.485714h-65.645715v65.828571H490.057143v-65.828571h-65.828572v-43.885714h65.828572v-65.828572h44.068571v65.828572h65.645715z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 599.771429h877.714286v43.885714H73.142857zM336.457143 380.342857h43.885714v526.628572h-43.885714z m307.2 0h43.885714v526.628572h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.588571 87.588571 0 0 0 87.771429 87.771429h614.4a87.588571 87.588571 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857H204.8A131.657143 131.657143 0 0 0 73.142857 204.8v219.428571h877.714286v-219.428571A131.657143 131.657143 0 0 0 819.2 73.142857z m-219.428571 197.485714h-65.828572v65.828572h-43.885714v-65.828572h-65.828572v-43.885714h65.828572V160.914286h43.885714v65.828571h65.828572z\"/></svg>";
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.99596 99.038384c-25.470707-25.6-60.121212-39.822222-96.323233-39.822222H194.19798c-36.072727 0-70.723232 14.351515-96.323233 39.822222-25.6 25.6-39.822222 60.121212-39.822222 96.323232v635.474748c0 36.072727 14.351515 70.723232 39.822222 96.323232C123.474747 952.759596 158.125253 967.111111 194.19798 967.111111h635.474747c36.072727 0 70.723232-14.351515 96.323233-39.951515 25.6-25.6 39.951515-60.121212 39.951515-96.323232V195.361616c0-36.072727-14.351515-70.723232-39.951515-96.323232z m-277.850505 5.559596v226.909091H375.725253V104.59798h272.420202zM103.434343 195.361616c0-24.048485 9.567677-47.191919 26.634344-64.129293 17.066667-17.066667 40.080808-26.634343 64.129293-26.634343h136.145454v226.909091H103.434343V195.361616z m90.763637 726.367677c-24.048485 0-47.191919-9.567677-64.129293-26.634344-17.066667-17.066667-26.634343-40.080808-26.634344-64.129292V649.309091h226.909091v272.420202H194.19798z m181.527273 0V649.309091h272.290909v272.420202H375.725253z m544.711111-90.892929c0 24.048485-9.567677 47.191919-26.634344 64.129293-17.066667 17.066667-40.080808 26.634343-64.129293 26.634343H693.527273V649.309091h226.909091v181.527273zM693.527273 331.507071V104.59798h136.145454c24.048485 0 47.191919 9.567677 64.129293 26.634343 17.066667 17.066667 26.634343 40.080808 26.634344 64.129293v136.145455H693.527273z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v44.068571H73.142857zM336.64 117.028571h43.885714v526.628572h-43.885714z m307.017143 0h44.068571v526.628572H643.657143zM73.142857 599.771429v219.428571a131.657143 131.657143 0 0 0 131.657143 131.657143h614.4a131.657143 131.657143 0 0 0 131.657143-131.657143v-219.428571z m526.628572 197.485714h-65.645715v65.828571H490.057143v-65.828571h-65.828572v-43.885714h65.828572v-65.828572h44.068571v65.828572h65.645715z\"/></svg>";
 
 /***/ }),
 /* 6 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M336.457143 73.142857h43.885714v877.714286h-43.885714z m307.382857 0h43.702857v877.714286h-43.702857z m-438.857143 0h614.4A131.657143 131.657143 0 0 1 950.857143 204.8v614.4a131.474286 131.474286 0 0 1-131.474286 131.657143h-614.4A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.982857 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.771428 87.771429v614.4a87.588571 87.588571 0 0 0 87.771428 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v307.2H73.142857z m292.571429 43.885714v219.428572h292.571428v-219.428572z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.99596 99.038384c-25.470707-25.6-60.121212-39.822222-96.323233-39.822222H194.19798c-36.072727 0-70.723232 14.351515-96.323233 39.822222-25.6 25.6-39.822222 60.121212-39.822222 96.323232v635.474748c0 36.072727 14.351515 70.723232 39.822222 96.323232C123.474747 952.759596 158.125253 967.111111 194.19798 967.111111h635.474747c36.072727 0 70.723232-14.351515 96.323233-39.951515 25.6-25.6 39.951515-60.121212 39.951515-96.323232V195.361616c0-36.072727-14.351515-70.723232-39.951515-96.323232z m-277.850505 5.559596v226.909091H375.725253V104.59798h272.420202zM103.434343 195.361616c0-24.048485 9.567677-47.191919 26.634344-64.129293 17.066667-17.066667 40.080808-26.634343 64.129293-26.634343h136.145454v226.909091H103.434343V195.361616z m90.763637 726.367677c-24.048485 0-47.191919-9.567677-64.129293-26.634344-17.066667-17.066667-26.634343-40.080808-26.634344-64.129292V649.309091h226.909091v272.420202H194.19798z m181.527273 0V649.309091h272.290909v272.420202H375.725253z m544.711111-90.892929c0 24.048485-9.567677 47.191919-26.634344 64.129293-17.066667 17.066667-40.080808 26.634343-64.129293 26.634343H693.527273V649.309091h226.909091v181.527273zM693.527273 331.507071V104.59798h136.145454c24.048485 0 47.191919 9.567677 64.129293 26.634343 17.066667 17.066667 26.634343 40.080808 26.634344 64.129293v136.145455H693.527273z\"/></svg>";
 
 /***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.996 99.038c-25.47-25.6-60.121-39.822-96.323-39.822H194.198c-75.12 0.13-136.016 61.026-136.145 136.146v635.345c0 36.073 14.351 70.723 39.822 96.323 25.6 25.73 60.25 40.081 96.323 40.081h635.475c36.072 0 70.723-14.351 96.323-39.951 25.6-25.6 39.951-60.122 39.951-96.324V195.362c0-36.073-14.351-70.724-39.951-96.324z m-365.77 494.287L512 545.228l-48.226 48.097-32.194-31.935 48.355-48.226-48.226-48.097 32.194-32.194L512 480.97l48.097-48.097 32.194 32.194-48.097 48.097 48.226 48.226-32.194 31.935zM103.434 195.362c0-24.049 9.568-47.192 26.635-64.13 17.066-17.066 40.08-26.634 64.129-26.634h136.145v226.91H103.434V195.361z m0 181.656h226.91V649.31h-226.91V377.02z m90.764 544.84c-24.049 0-47.192-9.567-64.13-26.634-17.066-17.066-26.634-40.08-26.634-64.258V694.69h226.91v227.168H194.197z m726.238-90.763c0 24.048-9.438 47.192-26.505 64.259-17.066 17.066-40.21 26.634-64.258 26.505H693.527V694.69h226.91v136.404z m0-181.786H693.527V377.02h226.91v272.29zM693.527 331.507V104.598h136.146c24.048 0 47.192 9.438 64.258 26.505 17.067 17.067 26.635 40.21 26.505 64.259v136.145H693.527z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M336.457143 73.142857h43.885714v877.714286h-43.885714z m307.382857 0h43.702857v877.714286h-43.702857z m-438.857143 0h614.4A131.657143 131.657143 0 0 1 950.857143 204.8v614.4a131.474286 131.474286 0 0 1-131.474286 131.657143h-614.4A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.982857 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.771428 87.771429v614.4a87.588571 87.588571 0 0 0 87.771428 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v307.2H73.142857z m292.571429 43.885714v219.428572h292.571428v-219.428572z\"/></svg>";
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.99596 99.038384c-25.470707-25.6-60.121212-39.822222-96.323233-39.822222H194.19798c-36.072727 0-70.723232 14.351515-96.323233 39.822222-25.6 25.6-39.822222 60.121212-39.822222 96.323232v635.474748c0 36.072727 14.351515 70.723232 39.822222 96.323232C123.474747 952.759596 158.125253 967.111111 194.19798 967.111111h635.474747c36.072727 0 70.723232-14.351515 96.323233-39.951515 25.6-25.6 39.951515-60.121212 39.951515-96.323232V195.361616c0-36.072727-14.351515-70.723232-39.951515-96.323232z m-550.270707 5.559596h272.290909v227.167677H375.725253V104.59798z m56.242424 360.468687l31.935353-32.19394 48.09697 48.226263 48.09697-48.226263 32.193939 32.19394-48.09697 48.096969 48.226263 48.226263-32.193939 31.935354-48.226263-48.09697-48.226263 48.09697-31.935353-31.935354 48.226262-48.226263-48.096969-48.096969zM103.434343 195.361616c0-24.048485 9.567677-47.191919 26.634344-64.129293 17.066667-17.066667 40.080808-26.634343 64.129293-26.634343h136.145454v227.167677H103.434343V195.361616z m817.002021 635.733333c0 24.048485-9.567677 47.191919-26.634344 64.258586-17.066667 17.066667-40.080808 26.634343-64.129293 26.634344H194.19798c-24.048485 0-47.191919-9.567677-64.258586-26.634344C112.872727 878.157576 103.434343 855.014141 103.434343 830.836364V694.690909h226.909091v226.909091h45.381819V694.690909h272.290909v226.909091h45.381818V694.690909h226.909091v136.40404z m0-499.329292H693.527273V104.59798h136.145454c24.048485 0 47.191919 9.567677 64.129293 26.634343 17.066667 17.066667 26.634343 40.080808 26.634344 64.129293v136.404041z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M925.996 99.038c-25.47-25.6-60.121-39.822-96.323-39.822H194.198c-75.12 0.13-136.016 61.026-136.145 136.146v635.345c0 36.073 14.351 70.723 39.822 96.323 25.6 25.73 60.25 40.081 96.323 40.081h635.475c36.072 0 70.723-14.351 96.323-39.951 25.6-25.6 39.951-60.122 39.951-96.324V195.362c0-36.073-14.351-70.724-39.951-96.324z m-365.77 494.287L512 545.228l-48.226 48.097-32.194-31.935 48.355-48.226-48.226-48.097 32.194-32.194L512 480.97l48.097-48.097 32.194 32.194-48.097 48.097 48.226 48.226-32.194 31.935zM103.434 195.362c0-24.049 9.568-47.192 26.635-64.13 17.066-17.066 40.08-26.634 64.129-26.634h136.145v226.91H103.434V195.361z m0 181.656h226.91V649.31h-226.91V377.02z m90.764 544.84c-24.049 0-47.192-9.567-64.13-26.634-17.066-17.066-26.634-40.08-26.634-64.258V694.69h226.91v227.168H194.197z m726.238-90.763c0 24.048-9.438 47.192-26.505 64.259-17.066 17.066-40.21 26.634-64.258 26.505H693.527V694.69h226.91v136.404z m0-181.786H693.527V377.02h226.91v272.29zM693.527 331.507V104.598h136.146c24.048 0 47.192 9.438 64.258 26.505 17.067 17.067 26.635 40.21 26.505 64.259v136.145H693.527z\"/></svg>";
 
 /***/ }),
 /* 9 */
@@ -869,6 +932,7 @@ module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg c
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: external {"commonjs":"quill","commonjs2":"quill","amd":"quill","root":"Quill"}
@@ -1669,9 +1733,7 @@ class table_TableContainer extends Container {
     return this.children.head;
   }
 
-  deleteColumns(compareRect) {
-    let delIndexes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    let editorWrapper = arguments.length > 2 ? arguments[2] : undefined;
+  deleteColumns(compareRect, delIndexes = [], editorWrapper) {
     const [body] = this.descendants(TableBody);
     if (body == null || body.children.head == null) return;
     const tableCells = this.descendants(TableCell);
@@ -1808,9 +1870,7 @@ class table_TableContainer extends Container {
     }
   }
 
-  insertColumn(compareRect, colIndex) {
-    let isRight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    let editorWrapper = arguments.length > 3 ? arguments[3] : undefined;
+  insertColumn(compareRect, colIndex, isRight = true, editorWrapper) {
     const [body] = this.descendants(TableBody);
     const [tableColGroup] = this.descendants(TableColGroup);
     const tableCols = this.descendants(TableCol);
@@ -2122,10 +2182,10 @@ class table_selection_TableSelection {
 
     this.dragging = false;
     this.selectingHandler = this.mouseDownHandler.bind(this);
-    this.clearSelectionHandler  = this.clearSelection.bind(this);
+    this.clearSelectionHandler = this.clearSelection.bind(this);
     this.helpLinesInitial();
     this.quill.root.addEventListener('mousedown', this.selectingHandler, false);
-    this.quill.on('text-change', this.clearSelectionHandler );
+    this.quill.on('text-change', this.clearSelectionHandler);
   }
 
   helpLinesInitial() {
@@ -2267,7 +2327,7 @@ class table_selection_TableSelection {
       this[direction] = null;
     });
     this.quill.root.removeEventListener('mousedown', this.selectingHandler, false);
-    this.quill.off('text-change', this.clearSelectionHandler );
+    this.quill.off('text-change', this.clearSelectionHandler);
     return null;
   }
 
@@ -2307,35 +2367,35 @@ function computeBoundaryFromRects(startRect, endRect) {
   };
 }
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_1.svg
-var icon_operation_1 = __webpack_require__(1);
+var icon_operation_1 = __webpack_require__(2);
 var icon_operation_1_default = /*#__PURE__*/__webpack_require__.n(icon_operation_1);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_2.svg
-var icon_operation_2 = __webpack_require__(2);
+var icon_operation_2 = __webpack_require__(3);
 var icon_operation_2_default = /*#__PURE__*/__webpack_require__.n(icon_operation_2);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_3.svg
-var icon_operation_3 = __webpack_require__(3);
+var icon_operation_3 = __webpack_require__(4);
 var icon_operation_3_default = /*#__PURE__*/__webpack_require__.n(icon_operation_3);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_4.svg
-var icon_operation_4 = __webpack_require__(4);
+var icon_operation_4 = __webpack_require__(5);
 var icon_operation_4_default = /*#__PURE__*/__webpack_require__.n(icon_operation_4);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_5.svg
-var icon_operation_5 = __webpack_require__(5);
+var icon_operation_5 = __webpack_require__(6);
 var icon_operation_5_default = /*#__PURE__*/__webpack_require__.n(icon_operation_5);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_6.svg
-var icon_operation_6 = __webpack_require__(6);
+var icon_operation_6 = __webpack_require__(7);
 var icon_operation_6_default = /*#__PURE__*/__webpack_require__.n(icon_operation_6);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_7.svg
-var icon_operation_7 = __webpack_require__(7);
+var icon_operation_7 = __webpack_require__(8);
 var icon_operation_7_default = /*#__PURE__*/__webpack_require__.n(icon_operation_7);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_8.svg
-var icon_operation_8 = __webpack_require__(8);
+var icon_operation_8 = __webpack_require__(1);
 var icon_operation_8_default = /*#__PURE__*/__webpack_require__.n(icon_operation_8);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_9.svg
@@ -2355,14 +2415,14 @@ var icon_operation_9_default = /*#__PURE__*/__webpack_require__.n(icon_operation
 
 
 
-const MENU_MIN_HEIHGT = 150;
+const MENU_MIN_HEIHGT = 180;
 const MENU_WIDTH = 200;
 const table_operation_menu_ERROR_LIMIT = 5;
-const DEFAULT_CELL_COLORS = ['white', 'red', 'yellow', 'blue'];
-const DEFAULT_COLOR_SUBTITLE = 'Background Colors';
+const DEFAULT_CELL_COLORS = ["white", "red", "yellow", "blue"];
+const DEFAULT_COLOR_SUBTITLE = "Background Colors";
 const MENU_ITEMS_DEFAULT = {
   insertColumnRight: {
-    text: 'Insert column right',
+    text: "Insert column right",
     iconSrc: icon_operation_1_default.a,
 
     handler() {
@@ -2379,7 +2439,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   insertColumnLeft: {
-    text: 'Insert column left',
+    text: "Insert column left",
     iconSrc: icon_operation_2_default.a,
 
     handler() {
@@ -2396,7 +2456,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   insertRowUp: {
-    text: 'Insert row up',
+    text: "Insert row up",
     iconSrc: icon_operation_3_default.a,
 
     handler() {
@@ -2409,7 +2469,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   insertRowDown: {
-    text: 'Insert row down',
+    text: "Insert row down",
     iconSrc: icon_operation_4_default.a,
 
     handler() {
@@ -2422,7 +2482,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   mergeCells: {
-    text: 'Merge selected cells',
+    text: "Merge selected cells",
     iconSrc: icon_operation_5_default.a,
 
     handler() {
@@ -2454,7 +2514,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   unmergeCells: {
-    text: 'Unmerge cells',
+    text: "Unmerge cells",
     iconSrc: icon_operation_6_default.a,
 
     handler() {
@@ -2466,7 +2526,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   deleteColumn: {
-    text: 'Delete selected columns',
+    text: "Delete selected columns",
     iconSrc: icon_operation_7_default.a,
 
     handler() {
@@ -2485,7 +2545,7 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   deleteRow: {
-    text: 'Delete selected rows',
+    text: "Delete selected rows",
     iconSrc: icon_operation_8_default.a,
 
     handler() {
@@ -2497,22 +2557,33 @@ const MENU_ITEMS_DEFAULT = {
 
   },
   deleteTable: {
-    text: 'Delete table',
+    text: "Delete table",
     iconSrc: icon_operation_9_default.a,
 
     handler() {
-      const betterTableModule = this.quill.getModule('better-table');
+      const betterTableModule = this.quill.getModule("better-table");
       const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
       betterTableModule.hideTableTools();
       tableContainer.remove();
       this.quill.update(external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.USER);
     }
 
+  },
+  highlightSelection: {
+    text: "Highlight Selection",
+    iconSrc: icon_operation_8_default.a,
+
+    handler() {
+      const betterTableModule = this.quill.getModule("better-table");
+      const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
+      external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.format("color", "red");
+    }
+
   }
 };
 class table_operation_menu_TableOperationMenu {
   constructor(params, quill, options) {
-    const betterTableModule = quill.getModule('better-table');
+    const betterTableModule = quill.getModule("better-table");
     this.tableSelection = betterTableModule.tableSelection;
     this.table = params.table;
     this.quill = quill;
@@ -2540,27 +2611,28 @@ class table_operation_menu_TableOperationMenu {
     return null;
   }
 
-  menuInitial(_ref) {
-    let {
-      table,
-      left,
-      top
-    } = _ref;
-    this.domNode = document.createElement('div');
-    this.domNode.classList.add('qlbt-operation-menu');
+  menuInitial({
+    table,
+    left,
+    top
+  }) {
+    this.domNode = document.createElement("div");
+    this.domNode.classList.add("qlbt-operation-menu");
     css(this.domNode, {
-      position: 'absolute',
+      position: "absolute",
       left: "".concat(left, "px"),
       top: "".concat(top, "px"),
-      'min-height': "".concat(MENU_MIN_HEIHGT, "px"),
+      "min-height": "".concat(MENU_MIN_HEIHGT, "px"),
       width: "".concat(MENU_WIDTH, "px")
     });
 
     for (let name in this.menuItems) {
+      console.log(this.menuItems);
+
       if (this.menuItems[name]) {
         this.domNode.appendChild(this.menuItemCreator(Object.assign({}, MENU_ITEMS_DEFAULT[name], this.menuItems[name])));
 
-        if (['insertRowDown', 'unmergeCells'].indexOf(name) > -1) {
+        if (["insertRowDown", "unmergeCells"].indexOf(name) > -1) {
           this.domNode.appendChild(dividingCreator());
         }
       }
@@ -2575,15 +2647,15 @@ class table_operation_menu_TableOperationMenu {
 
 
     function dividingCreator() {
-      const dividing = document.createElement('div');
-      dividing.classList.add('qlbt-operation-menu-dividing');
+      const dividing = document.createElement("div");
+      dividing.classList.add("qlbt-operation-menu-dividing");
       return dividing;
     } // create subtitle for menu
 
 
     function subTitleCreator(title) {
-      const subTitle = document.createElement('div');
-      subTitle.classList.add('qlbt-operation-menu-subtitle');
+      const subTitle = document.createElement("div");
+      subTitle.classList.add("qlbt-operation-menu-subtitle");
       subTitle.innerText = title;
       return subTitle;
     }
@@ -2591,24 +2663,24 @@ class table_operation_menu_TableOperationMenu {
 
   colorsItemCreator(colors) {
     const self = this;
-    const node = document.createElement('div');
-    node.classList.add('qlbt-operation-color-picker');
+    const node = document.createElement("div");
+    node.classList.add("qlbt-operation-color-picker");
     colors.forEach(color => {
       let colorBox = colorBoxCreator(color);
       node.appendChild(colorBox);
     });
 
     function colorBoxCreator(color) {
-      const box = document.createElement('div');
-      box.classList.add('qlbt-operation-color-picker-item');
-      box.setAttribute('data-color', color);
+      const box = document.createElement("div");
+      box.classList.add("qlbt-operation-color-picker-item");
+      box.setAttribute("data-color", color);
       box.style.backgroundColor = color;
-      box.addEventListener('click', function () {
+      box.addEventListener("click", function () {
         const selectedTds = self.tableSelection.selectedTds;
 
         if (selectedTds && selectedTds.length > 0) {
           selectedTds.forEach(tableCell => {
-            tableCell.format('cell-bg', color);
+            tableCell.format("cell-bg", color);
           });
         }
       }, false);
@@ -2618,23 +2690,22 @@ class table_operation_menu_TableOperationMenu {
     return node;
   }
 
-  menuItemCreator(_ref2) {
-    let {
-      text,
-      iconSrc,
-      handler
-    } = _ref2;
-    const node = document.createElement('div');
-    node.classList.add('qlbt-operation-menu-item');
-    const iconSpan = document.createElement('span');
-    iconSpan.classList.add('qlbt-operation-menu-icon');
+  menuItemCreator({
+    text,
+    iconSrc,
+    handler
+  }) {
+    const node = document.createElement("div");
+    node.classList.add("qlbt-operation-menu-item");
+    const iconSpan = document.createElement("span");
+    iconSpan.classList.add("qlbt-operation-menu-icon");
     iconSpan.innerHTML = iconSrc;
-    const textSpan = document.createElement('span');
-    textSpan.classList.add('qlbt-operation-menu-text');
+    const textSpan = document.createElement("span");
+    textSpan.classList.add("qlbt-operation-menu-text");
     textSpan.innerText = text;
     node.appendChild(iconSpan);
     node.appendChild(textSpan);
-    node.addEventListener('click', handler.bind(this), false);
+    node.addEventListener("click", handler.bind(this), false);
     return node;
   }
 
@@ -2990,8 +3061,7 @@ class quill_better_table_BetterTable extends Module {
     });
   }
 
-  getTable() {
-    let range = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.quill.getSelection();
+  getTable(range = this.quill.getSelection()) {
     if (range == null) return [null, null, null, -1];
     const [cellLine, offset] = this.quill.getLine(range.index);
 
