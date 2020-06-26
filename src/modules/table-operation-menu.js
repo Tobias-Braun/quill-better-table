@@ -267,7 +267,7 @@ const MENU_ITEMS_DEFAULT = {
       divDomNode.setAttribute("data-highlight", "true");
       if (this.selectedTds && this.selectedTds.length > 0) {
         this.selectedTds.forEach((tableCell) => {
-          tableCell.format("cell-bg", "red");
+          tableCell.format("cell-highlight", "true");
         });
       }
     },

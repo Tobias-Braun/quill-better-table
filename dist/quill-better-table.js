@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "16951bd1cdf66d3ea3d5";
+/******/ 	var hotCurrentHash = "0b228408208d86d8589c";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1360,15 +1360,19 @@ class TableCellLine extends table_Block {
   static create(value) {
     const node = super.create(value);
     CELL_IDENTITY_KEYS.forEach(key => {
-      let identityMaker = key === 'row' ? table_rowId : table_cellId;
+      let identityMaker = key === "row" ? table_rowId : table_cellId;
       node.setAttribute("data-".concat(key), value[key] || identityMaker());
     });
     CELL_ATTRIBUTES.forEach(attrName => {
       node.setAttribute("data-".concat(attrName), value[attrName] || CELL_DEFAULT[attrName]);
     });
 
-    if (value['cell-bg']) {
-      node.setAttribute('data-cell-bg', value['cell-bg']);
+    if (value["cell-bg"]) {
+      node.setAttribute("data-cell-bg", value["cell-bg"]);
+    }
+
+    if (value["cell-highlight"]) {
+      node.setAttribute("data-cell-highlight", value["cell-highlight"]);
     }
 
     return node;
@@ -1376,7 +1380,7 @@ class TableCellLine extends table_Block {
 
   static formats(domNode) {
     const formats = {};
-    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).concat(['cell-bg']).reduce((formats, attribute) => {
+    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).concat(["cell-bg", "cell-highlight"]).reduce((formats, attribute) => {
       if (domNode.hasAttribute("data-".concat(attribute))) {
         formats[attribute] = domNode.getAttribute("data-".concat(attribute)) || undefined;
       }
@@ -1392,13 +1396,19 @@ class TableCellLine extends table_Block {
       } else {
         this.domNode.removeAttribute("data-".concat(name));
       }
-    } else if (name === 'cell-bg') {
+    } else if (name === "cell-bg") {
       if (value) {
-        this.domNode.setAttribute('data-cell-bg', value);
+        this.domNode.setAttribute("data-cell-bg", value);
       } else {
-        this.domNode.removeAttribute('data-cell-bg');
+        this.domNode.removeAttribute("data-cell-bg");
       }
-    } else if (name === 'header') {
+    } else if (name === "cell-highlight") {
+      if (value) {
+        this.domNode.setAttribute("data-cell-highlight", value);
+      } else {
+        this.domNode.removeAttribute("data-cell-highlight");
+      }
+    } else if (name === "header") {
       if (!value) return;
       const {
         row,
@@ -1421,17 +1431,19 @@ class TableCellLine extends table_Block {
   optimize(context) {
     // cover shadowBlot's wrap call, pass params parentBlot initialize
     // needed
-    const rowId = this.domNode.getAttribute('data-row');
-    const rowspan = this.domNode.getAttribute('data-rowspan');
-    const colspan = this.domNode.getAttribute('data-colspan');
-    const cellBg = this.domNode.getAttribute('data-cell-bg');
+    const rowId = this.domNode.getAttribute("data-row");
+    const rowspan = this.domNode.getAttribute("data-rowspan");
+    const colspan = this.domNode.getAttribute("data-colspan");
+    const cellBg = this.domNode.getAttribute("data-cell-bg");
+    const cellHighlight = this.domNode.getAttribute("data-cell-highlight");
 
     if (this.statics.requiredContainer && !(this.parent instanceof this.statics.requiredContainer)) {
       this.wrap(this.statics.requiredContainer.blotName, {
         row: rowId,
         colspan,
         rowspan,
-        'cell-bg': cellBg
+        "cell-bg": cellBg,
+        "cell-highlight": cellHighlight
       });
     }
 
@@ -1470,9 +1482,13 @@ class TableCell extends Container {
       }
     });
 
-    if (value['cell-bg']) {
-      node.setAttribute('data-cell-bg', value['cell-bg']);
-      node.style.backgroundColor = value['cell-bg'];
+    if (value["cell-bg"]) {
+      node.setAttribute("data-cell-bg", value["cell-bg"]);
+      node.style.backgroundColor = value["cell-bg"];
+    }
+
+    if (value["cell-highlight"]) {
+      node.setAttribute("data-cell-highlight", value["cell-highlight"]);
     }
 
     return node;
@@ -1487,6 +1503,10 @@ class TableCell extends Container {
 
     if (domNode.hasAttribute("data-cell-bg")) {
       formats["cell-bg"] = domNode.getAttribute("data-cell-bg");
+    }
+
+    if (domNode.hasAttribute("data-cell-highlight")) {
+      formats["cell-highlight"] = domNode.getAttribute("data-cell-highlight");
     }
 
     return CELL_ATTRIBUTES.reduce((formats, attribute) => {
@@ -1517,6 +1537,10 @@ class TableCell extends Container {
       formats["cell-bg"] = this.domNode.getAttribute("data-cell-bg");
     }
 
+    if (this.domNode.hasAttribute("data-cell-highlight")) {
+      formats["cell-highlight"] = this.domNode.getAttribute("data-cell-highlight");
+    }
+
     return CELL_ATTRIBUTES.reduce((formats, attribute) => {
       if (this.domNode.hasAttribute(attribute)) {
         formats[attribute] = this.domNode.getAttribute(attribute);
@@ -1544,18 +1568,21 @@ class TableCell extends Container {
     if (CELL_ATTRIBUTES.indexOf(name) > -1) {
       this.toggleAttribute(name, value);
       this.formatChildren(name, value);
-    } else if (['row'].indexOf(name) > -1) {
+    } else if (["row"].indexOf(name) > -1) {
       this.toggleAttribute("data-".concat(name), value);
       this.formatChildren(name, value);
-    } else if (name === 'cell-bg') {
-      this.toggleAttribute('data-cell-bg', value);
+    } else if (name === "cell-bg") {
+      this.toggleAttribute("data-cell-bg", value);
       this.formatChildren(name, value);
 
       if (value) {
         this.domNode.style.backgroundColor = value;
       } else {
-        this.domNode.style.backgroundColor = 'initial';
+        this.domNode.style.backgroundColor = "initial";
       }
+    } else if (name === "cell-highlight") {
+      this.toggleAttribute("data-cell-highlight", value);
+      this.formatChildren(name, value);
     } else {
       super.format(name, value);
     }
@@ -1770,7 +1797,7 @@ class table_TableContainer extends Container {
     modifiedCells.forEach(cell => {
       const cellColspan = parseInt(cell.formats().colspan, 10);
       const cellWidth = parseInt(cell.formats().width, 10);
-      cell.format('colspan', cellColspan - delIndexes.length);
+      cell.format("colspan", cellColspan - delIndexes.length);
     });
     this.updateTableWidth();
   }
@@ -1836,7 +1863,7 @@ class table_TableContainer extends Container {
         return ref;
       }, null);
       nextRow.insertBefore(cell, refCell);
-      cell.format('row', nextRow.formats().row);
+      cell.format("row", nextRow.formats().row);
     });
     removedCells.forEach(cell => {
       cell.remove();
@@ -1947,7 +1974,7 @@ class table_TableContainer extends Container {
 
     modifiedCells.forEach(cell => {
       const cellColspan = cell.formats().colspan;
-      cell.format('colspan', parseInt(cellColspan, 10) + 1);
+      cell.format("colspan", parseInt(cellColspan, 10) + 1);
       affectedCells.push(cell);
     });
     affectedCells.sort((cellA, cellB) => {
@@ -2040,20 +2067,20 @@ class table_TableContainer extends Container {
         result && tableCell.moveChildren(result);
         tableCell.remove();
       } else {
-        tableCell.format('colspan', colspan);
-        tableCell.format('rowspan', rowspan);
+        tableCell.format("colspan", colspan);
+        tableCell.format("rowspan", rowspan);
         result = tableCell;
       }
 
       return result;
     }, null);
-    let rowId = mergedCell.domNode.getAttribute('data-row');
-    let cellId = mergedCell.children.head.domNode.getAttribute('data-cell');
+    let rowId = mergedCell.domNode.getAttribute("data-row");
+    let cellId = mergedCell.children.head.domNode.getAttribute("data-cell");
     mergedCell.children.forEach(cellLine => {
-      cellLine.format('cell', cellId);
-      cellLine.format('row', rowId);
-      cellLine.format('colspan', colspan);
-      cellLine.format('rowspan', rowspan);
+      cellLine.format("cell", cellId);
+      cellLine.format("row", rowId);
+      cellLine.format("colspan", colspan);
+      cellLine.format("rowspan", rowspan);
     });
     return mergedCell;
   }
@@ -2070,7 +2097,7 @@ class table_TableContainer extends Container {
       if (cellColspan > 1) {
         let ref = tableCell.next;
         let row = tableCell.row();
-        tableCell.format('colspan', 1);
+        tableCell.format("colspan", 1);
 
         for (let i = cellColspan; i > 1; i--) {
           this.insertCell(row, ref);
@@ -2101,7 +2128,7 @@ class table_TableContainer extends Container {
           nextRow = nextRow.next;
         }
 
-        tableCell.format('rowspan', 1);
+        tableCell.format("rowspan", 1);
       }
     });
   }
@@ -2122,8 +2149,8 @@ class table_TableViewWrapper extends Container {
   constructor(scroll, domNode) {
     super(scroll, domNode);
     const quill = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(scroll.domNode.parentNode);
-    domNode.addEventListener('scroll', e => {
-      const tableModule = quill.getModule('better-table');
+    domNode.addEventListener("scroll", e => {
+      const tableModule = quill.getModule("better-table");
 
       if (tableModule.columnTool) {
         tableModule.columnTool.domNode.scrollLeft = e.target.scrollLeft;
@@ -2595,7 +2622,7 @@ const MENU_ITEMS_DEFAULT = {
 
       if (this.selectedTds && this.selectedTds.length > 0) {
         this.selectedTds.forEach(tableCell => {
-          tableCell.format("cell-bg", "red");
+          tableCell.format("cell-highlight", "true");
         });
       }
     }
