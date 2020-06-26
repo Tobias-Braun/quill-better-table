@@ -257,8 +257,10 @@ const MENU_ITEMS_DEFAULT = {
     text: "Highlight Selection",
     iconSrc: operationIcon8,
     handler() {
-      const betterTableModule = this.quill.getModule("better-table");
-      const tableContainer = Quill.find(this.table);
+      console.log("test");
+      console.log("selected", this.selectedTds);
+      // const betterTableModule = this.quill.getModule("better-table");
+      // const tableContainer = Quill.find(this.table);
       Quill.format("color", "red");
     },
   },
