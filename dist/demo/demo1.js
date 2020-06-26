@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "0c86fba503baa428d4c0";
+/******/ 	var hotCurrentHash = "62d3cc3e876cde993aa2";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2574,8 +2574,10 @@ const MENU_ITEMS_DEFAULT = {
     iconSrc: icon_operation_8_default.a,
 
     handler() {
-      const betterTableModule = this.quill.getModule("better-table");
-      const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
+      console.log("test");
+      console.log("selected", this.selectedTds); // const betterTableModule = this.quill.getModule("better-table");
+      // const tableContainer = Quill.find(this.table);
+
       external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.format("color", "red");
     }
 
