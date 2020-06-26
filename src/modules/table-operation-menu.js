@@ -11,6 +11,7 @@ import operationIcon6 from "../assets/icons/icon_operation_6.svg";
 import operationIcon7 from "../assets/icons/icon_operation_7.svg";
 import operationIcon8 from "../assets/icons/icon_operation_8.svg";
 import operationIcon9 from "../assets/icons/icon_operation_9.svg";
+import operationIcon10 from "../assets/icons/icon_operation_10.svg";
 
 const MENU_MIN_HEIHGT = 180;
 const MENU_WIDTH = 200;
@@ -255,7 +256,7 @@ const MENU_ITEMS_DEFAULT = {
 
   highlightSelection: {
     text: "Highlight Selection",
-    iconSrc: operationIcon8,
+    iconSrc: operationIcon10,
     handler() {
       console.log("test");
       console.log("selected", this.selectedTds);
