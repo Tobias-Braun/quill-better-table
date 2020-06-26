@@ -265,9 +265,11 @@ const MENU_ITEMS_DEFAULT = {
       var divDomNode = divInsideCell.domNode;
       console.log("domNode", divDomNode);
       divDomNode.setAttribute("data-highlight", "true");
-      // const betterTableModule = this.quill.getModule("better-table");
-      // const tableContainer = Quill.find(this.table);
-      // Quill.format("color", "red");
+      if (this.selectedTds && this.selectedTds.length > 0) {
+        this.selectedTds.forEach((tableCell) => {
+          tableCell.format("cell-bg", "red");
+        });
+      }
     },
   },
 };
