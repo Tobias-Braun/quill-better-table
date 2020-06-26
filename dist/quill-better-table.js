@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "d46487f7f58342113f9b";
+/******/ 	var hotCurrentHash = "2d4491e416e3211afbae";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2591,9 +2591,13 @@ const MENU_ITEMS_DEFAULT = {
       console.log("head", divInsideCell);
       var divDomNode = divInsideCell.domNode;
       console.log("domNode", divDomNode);
-      divDomNode.setAttribute("data-highlight", "true"); // const betterTableModule = this.quill.getModule("better-table");
-      // const tableContainer = Quill.find(this.table);
-      // Quill.format("color", "red");
+      divDomNode.setAttribute("data-highlight", "true");
+
+      if (this.selectedTds && this.selectedTds.length > 0) {
+        this.selectedTds.forEach(tableCell => {
+          tableCell.format("cell-bg", "red");
+        });
+      }
     }
 
   }
