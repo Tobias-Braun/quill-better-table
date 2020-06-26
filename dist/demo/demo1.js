@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "62d3cc3e876cde993aa2";
+/******/ 	var hotCurrentHash = "9ea382e0c713a71747f5";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2575,10 +2575,14 @@ const MENU_ITEMS_DEFAULT = {
 
     handler() {
       console.log("test");
-      console.log("selected", this.selectedTds); // const betterTableModule = this.quill.getModule("better-table");
+      console.log("selected", this.selectedTds);
+      var divInsideCell = this.selectedTds[0].children.head;
+      console.log("head", divInsideCell);
+      var divDomNode = divInsideCell.domNode;
+      console.log("domNode", divDomNode);
+      divDomNode.setAttribute("data-highlight", "true"); // const betterTableModule = this.quill.getModule("better-table");
       // const tableContainer = Quill.find(this.table);
-
-      external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.format("color", "red");
+      // Quill.format("color", "red");
     }
 
   }
