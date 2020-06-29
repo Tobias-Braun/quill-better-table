@@ -316,7 +316,6 @@ export default class TableOperationMenu {
     });
 
     for (let name in this.menuItems) {
-      console.log(this.menuItems);
       if (this.menuItems[name]) {
         this.domNode.appendChild(
           this.menuItemCreator(
