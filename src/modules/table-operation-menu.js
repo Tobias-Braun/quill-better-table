@@ -264,7 +264,7 @@ const MENU_ITEMS_DEFAULT = {
       console.log("head", divInsideCell);
       var divDomNode = divInsideCell.domNode;
       console.log("domNode", divDomNode);
-      divDomNode.setAttribute("data-highlight", "true");
+      //divDomNode.setAttribute("data-highlight", "true");
       if (this.selectedTds && this.selectedTds.length > 0) {
         this.selectedTds.forEach((tableCell) => {
           tableCell.format("cell-highlight", "true");

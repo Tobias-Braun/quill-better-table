@@ -237,6 +237,14 @@ class TableCell extends Container {
     }
   }
 
+  toggleHighlight() {
+    if (this.domNode.getAttribute("data-cell-highlight")) {
+      this.domNode.removeAttribute(name);
+    } else {
+      this.domNode.setAttribute("data-cell-highlight", "true");
+    }
+  }
+
   formatChildren(name, value) {
     this.children.forEach((child) => {
       child.format(name, value);
@@ -260,7 +268,7 @@ class TableCell extends Container {
         this.domNode.style.backgroundColor = "initial";
       }
     } else if (name === "cell-highlight") {
-      this.toggleAttribute("data-cell-highlight", value);
+      this.toggleHighlight();
       this.formatChildren(name, value);
     } else {
       super.format(name, value);
