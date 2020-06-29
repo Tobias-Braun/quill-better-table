@@ -258,13 +258,6 @@ const MENU_ITEMS_DEFAULT = {
     text: "Highlight Selection",
     iconSrc: operationIcon10,
     handler() {
-      console.log("test");
-      console.log("selected", this.selectedTds);
-      var divInsideCell = this.selectedTds[0].children.head;
-      console.log("head", divInsideCell);
-      var divDomNode = divInsideCell.domNode;
-      console.log("domNode", divDomNode);
-      //divDomNode.setAttribute("data-highlight", "true");
       if (this.selectedTds && this.selectedTds.length > 0) {
         this.selectedTds.forEach((tableCell) => {
           tableCell.format("cell-highlight", "true");
