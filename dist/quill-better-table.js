@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "b3bce17fdb3e37b6c724";
+/******/ 	var hotCurrentHash = "e1e1df22e81c7812bac1";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1562,7 +1562,7 @@ class TableCell extends Container {
     console.log("toggle?", this.domNode.getAttribute("data-cell-highlight"));
 
     if (this.domNode.getAttribute("data-cell-highlight")) {
-      this.domNode.removeAttribute(name);
+      this.domNode.setAttribute("data-cell-highlight", "false");
     } else {
       this.domNode.setAttribute("data-cell-highlight", "true");
     }
