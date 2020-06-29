@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "0b228408208d86d8589c";
+/******/ 	var hotCurrentHash = "b2fa36e6da7bec505008";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -1558,6 +1558,14 @@ class TableCell extends Container {
     }
   }
 
+  toggleHighlight() {
+    if (this.domNode.getAttribute("data-cell-highlight")) {
+      this.domNode.removeAttribute(name);
+    } else {
+      this.domNode.setAttribute("data-cell-highlight", "true");
+    }
+  }
+
   formatChildren(name, value) {
     this.children.forEach(child => {
       child.format(name, value);
@@ -1581,7 +1589,7 @@ class TableCell extends Container {
         this.domNode.style.backgroundColor = "initial";
       }
     } else if (name === "cell-highlight") {
-      this.toggleAttribute("data-cell-highlight", value);
+      this.toggleHighlight();
       this.formatChildren(name, value);
     } else {
       super.format(name, value);
@@ -2617,8 +2625,7 @@ const MENU_ITEMS_DEFAULT = {
       var divInsideCell = this.selectedTds[0].children.head;
       console.log("head", divInsideCell);
       var divDomNode = divInsideCell.domNode;
-      console.log("domNode", divDomNode);
-      divDomNode.setAttribute("data-highlight", "true");
+      console.log("domNode", divDomNode); //divDomNode.setAttribute("data-highlight", "true");
 
       if (this.selectedTds && this.selectedTds.length > 0) {
         this.selectedTds.forEach(tableCell => {
