@@ -240,7 +240,7 @@ class TableCell extends Container {
   toggleHighlight() {
     console.log("toggle?", this.domNode.getAttribute("data-cell-highlight"));
     if (this.domNode.getAttribute("data-cell-highlight")) {
-      this.domNode.removeAttribute(name);
+      this.domNode.setAttribute("data-cell-highlight", "false");
     } else {
       this.domNode.setAttribute("data-cell-highlight", "true");
     }
