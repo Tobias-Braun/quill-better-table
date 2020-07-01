@@ -96,12 +96,16 @@ const MENU_ITEMS_DEFAULT = {
     text: "Insert row up",
     iconSrc: operationIcon3,
     handler() {
+      debugger;
       const tableContainer = Quill.find(this.table);
-      const affectedCells = tableContainer.insertRow(
-        this.boundary,
-        false,
+      const affectedCells = tableContainer.insertHead(
         this.quill.root.parentNode
       );
+      // const affectedCells = tableContainer.insertRow(
+      //   this.boundary,
+      //   false,
+      //   this.quill.root.parentNode
+      // );
       this.quill.update(Quill.sources.USER);
       this.quill.setSelection(
         this.quill.getIndex(affectedCells[0]),
