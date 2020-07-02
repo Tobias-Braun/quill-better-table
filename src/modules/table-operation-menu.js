@@ -96,16 +96,55 @@ const MENU_ITEMS_DEFAULT = {
     text: "Insert row up",
     iconSrc: operationIcon3,
     handler() {
-      debugger;
+      const tableContainer = Quill.find(this.table);
+
+      const affectedCells = tableContainer.insertRow(
+        this.boundary,
+        false,
+        this.quill.root.parentNode
+      );
+      this.quill.update(Quill.sources.USER);
+      this.quill.setSelection(
+        this.quill.getIndex(affectedCells[0]),
+        0,
+        Quill.sources.SILENT
+      );
+      this.tableSelection.setSelection(
+        affectedCells[0].domNode.getBoundingClientRect(),
+        affectedCells[0].domNode.getBoundingClientRect()
+      );
+    },
+  },
+
+  insertHeader: {
+    text: "Insert Header Row",
+    iconSrc: operationIcon3,
+    handler() {
       const tableContainer = Quill.find(this.table);
       const affectedCells = tableContainer.insertHead(
         this.quill.root.parentNode
       );
-      // const affectedCells = tableContainer.insertRow(
-      //   this.boundary,
-      //   false,
-      //   this.quill.root.parentNode
-      // );
+      this.quill.update(Quill.sources.USER);
+      this.quill.setSelection(
+        this.quill.getIndex(affectedCells[0]),
+        0,
+        Quill.sources.SILENT
+      );
+      this.tableSelection.setSelection(
+        affectedCells[0].domNode.getBoundingClientRect(),
+        affectedCells[0].domNode.getBoundingClientRect()
+      );
+    },
+  },
+
+  insertFooter: {
+    text: "Insert Footer Row",
+    iconSrc: operationIcon3,
+    handler() {
+      const tableContainer = Quill.find(this.table);
+      const affectedCells = tableContainer.insertFootRow(
+        this.quill.root.parentNode
+      );
       this.quill.update(Quill.sources.USER);
       this.quill.setSelection(
         this.quill.getIndex(affectedCells[0]),

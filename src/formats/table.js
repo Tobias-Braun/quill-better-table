@@ -126,6 +126,222 @@ TableCellLine.blotName = "table-cell-line";
 TableCellLine.ClassName = "qlbt-cell-line";
 TableCellLine.tagName = "DIV";
 
+class TableCellHeadLine extends Block {
+  static create(value) {
+    const node = super.create(value);
+
+    CELL_IDENTITY_KEYS.forEach((key) => {
+      let identityMaker = key === "row" ? rowId : cellId;
+      node.setAttribute(`data-${key}`, value[key] || identityMaker());
+    });
+
+    CELL_ATTRIBUTES.forEach((attrName) => {
+      node.setAttribute(
+        `data-${attrName}`,
+        value[attrName] || CELL_DEFAULT[attrName]
+      );
+    });
+
+    if (value["cell-bg"]) {
+      node.setAttribute("data-cell-bg", value["cell-bg"]);
+    }
+
+    if (value["cell-highlight"]) {
+      node.setAttribute("data-cell-highlight", value["cell-highlight"]);
+    }
+
+    return node;
+  }
+
+  static formats(domNode) {
+    const formats = {};
+
+    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS)
+      .concat(["cell-bg", "cell-highlight"])
+      .reduce((formats, attribute) => {
+        if (domNode.hasAttribute(`data-${attribute}`)) {
+          formats[attribute] =
+            domNode.getAttribute(`data-${attribute}`) || undefined;
+        }
+        return formats;
+      }, formats);
+  }
+
+  format(name, value) {
+    if (CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).indexOf(name) > -1) {
+      if (value) {
+        this.domNode.setAttribute(`data-${name}`, value);
+      } else {
+        this.domNode.removeAttribute(`data-${name}`);
+      }
+    } else if (name === "cell-bg") {
+      if (value) {
+        this.domNode.setAttribute("data-cell-bg", value);
+      } else {
+        this.domNode.removeAttribute("data-cell-bg");
+      }
+    } else if (name === "cell-highlight") {
+      if (value) {
+        this.domNode.setAttribute("data-cell-highlight", value);
+      } else {
+        this.domNode.removeAttribute("data-cell-highlight");
+      }
+    } else if (name === "header") {
+      if (!value) return;
+      const { row, cell, rowspan, colspan } = TableCellLine.formats(
+        this.domNode
+      );
+      super.format(name, {
+        value,
+        row,
+        cell,
+        rowspan,
+        colspan,
+      });
+    } else {
+      super.format(name, value);
+    }
+  }
+
+  optimize(context) {
+    // cover shadowBlot's wrap call, pass params parentBlot initialize
+    // needed
+    const rowId = this.domNode.getAttribute("data-row");
+    const rowspan = this.domNode.getAttribute("data-rowspan");
+    const colspan = this.domNode.getAttribute("data-colspan");
+    const cellBg = this.domNode.getAttribute("data-cell-bg");
+    const cellHighlight = this.domNode.getAttribute("data-cell-highlight");
+    if (
+      this.statics.requiredContainer &&
+      !(this.parent instanceof this.statics.requiredContainer)
+    ) {
+      this.wrap(this.statics.requiredContainer.blotName, {
+        row: rowId,
+        colspan,
+        rowspan,
+        "cell-bg": cellBg,
+        "cell-highlight": cellHighlight,
+      });
+    }
+    super.optimize(context);
+  }
+
+  tableCell() {
+    return this.parent;
+  }
+}
+TableCellHeadLine.blotName = "table-cell-head-line";
+TableCellHeadLine.ClassName = "qlbt-cell-head-line";
+TableCellHeadLine.tagName = "DIV";
+
+class TableCellFootLine extends Block {
+  static create(value) {
+    const node = super.create(value);
+
+    CELL_IDENTITY_KEYS.forEach((key) => {
+      let identityMaker = key === "row" ? rowId : cellId;
+      node.setAttribute(`data-${key}`, value[key] || identityMaker());
+    });
+
+    CELL_ATTRIBUTES.forEach((attrName) => {
+      node.setAttribute(
+        `data-${attrName}`,
+        value[attrName] || CELL_DEFAULT[attrName]
+      );
+    });
+
+    if (value["cell-bg"]) {
+      node.setAttribute("data-cell-bg", value["cell-bg"]);
+    }
+
+    if (value["cell-highlight"]) {
+      node.setAttribute("data-cell-highlight", value["cell-highlight"]);
+    }
+
+    return node;
+  }
+
+  static formats(domNode) {
+    const formats = {};
+
+    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS)
+      .concat(["cell-bg", "cell-highlight"])
+      .reduce((formats, attribute) => {
+        if (domNode.hasAttribute(`data-${attribute}`)) {
+          formats[attribute] =
+            domNode.getAttribute(`data-${attribute}`) || undefined;
+        }
+        return formats;
+      }, formats);
+  }
+
+  format(name, value) {
+    if (CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).indexOf(name) > -1) {
+      if (value) {
+        this.domNode.setAttribute(`data-${name}`, value);
+      } else {
+        this.domNode.removeAttribute(`data-${name}`);
+      }
+    } else if (name === "cell-bg") {
+      if (value) {
+        this.domNode.setAttribute("data-cell-bg", value);
+      } else {
+        this.domNode.removeAttribute("data-cell-bg");
+      }
+    } else if (name === "cell-highlight") {
+      if (value) {
+        this.domNode.setAttribute("data-cell-highlight", value);
+      } else {
+        this.domNode.removeAttribute("data-cell-highlight");
+      }
+    } else if (name === "header") {
+      if (!value) return;
+      const { row, cell, rowspan, colspan } = TableCellLine.formats(
+        this.domNode
+      );
+      super.format(name, {
+        value,
+        row,
+        cell,
+        rowspan,
+        colspan,
+      });
+    } else {
+      super.format(name, value);
+    }
+  }
+
+  optimize(context) {
+    // cover shadowBlot's wrap call, pass params parentBlot initialize
+    // needed
+    const rowId = this.domNode.getAttribute("data-row");
+    const rowspan = this.domNode.getAttribute("data-rowspan");
+    const colspan = this.domNode.getAttribute("data-colspan");
+    const cellBg = this.domNode.getAttribute("data-cell-bg");
+    const cellHighlight = this.domNode.getAttribute("data-cell-highlight");
+    if (
+      this.statics.requiredContainer &&
+      !(this.parent instanceof this.statics.requiredContainer)
+    ) {
+      this.wrap(this.statics.requiredContainer.blotName, {
+        row: rowId,
+        colspan,
+        rowspan,
+        "cell-bg": cellBg,
+        "cell-highlight": cellHighlight,
+      });
+    }
+    super.optimize(context);
+  }
+
+  tableCell() {
+    return this.parent;
+  }
+}
+TableCellFootLine.blotName = "table-cell-foot-line";
+TableCellFootLine.ClassName = "qlbt-cell-foot-line";
+TableCellFootLine.tagName = "DIV";
+
 class TableCell extends Container {
   checkMerge() {
     if (super.checkMerge() && this.next.children.head != null) {
@@ -238,7 +454,7 @@ class TableCell extends Container {
   }
 
   toggleHighlight() {
-    if (this.domNode.getAttribute("data-cell-highlight")) {
+    if (this.domNode.getAttribute("data-cell-highlight") == "true") {
       this.domNode.setAttribute("data-cell-highlight", "false");
     } else {
       this.domNode.setAttribute("data-cell-highlight", "true");
@@ -488,6 +704,187 @@ class TableCellHead extends Container {
 TableCellHead.blotName = "tableHead";
 TableCellHead.tagName = "TH";
 
+class TableCellFoot extends Container {
+  checkMerge() {
+    if (super.checkMerge() && this.next.children.head != null) {
+      const thisHead = this.children.head.formats()[
+        this.children.head.statics.blotName
+      ];
+      const thisTail = this.children.tail.formats()[
+        this.children.tail.statics.blotName
+      ];
+      const nextHead = this.next.children.head.formats()[
+        this.next.children.head.statics.blotName
+      ];
+      const nextTail = this.next.children.tail.formats()[
+        this.next.children.tail.statics.blotName
+      ];
+      return (
+        thisHead.cell === thisTail.cell &&
+        thisHead.cell === nextHead.cell &&
+        thisHead.cell === nextTail.cell
+      );
+    }
+    return false;
+  }
+
+  static create(value) {
+    const node = super.create(value);
+    node.setAttribute("data-row", value.row);
+
+    CELL_ATTRIBUTES.forEach((attrName) => {
+      if (value[attrName]) {
+        node.setAttribute(attrName, value[attrName]);
+      }
+    });
+
+    if (value["cell-bg"]) {
+      node.setAttribute("data-cell-bg", value["cell-bg"]);
+      node.style.backgroundColor = value["cell-bg"];
+    }
+
+    if (value["cell-highlight"]) {
+      node.setAttribute("data-cell-highlight", value["cell-highlight"]);
+    }
+
+    return node;
+  }
+
+  static formats(domNode) {
+    const formats = {};
+
+    if (domNode.hasAttribute("data-row")) {
+      formats["row"] = domNode.getAttribute("data-row");
+    }
+
+    if (domNode.hasAttribute("data-cell-bg")) {
+      formats["cell-bg"] = domNode.getAttribute("data-cell-bg");
+    }
+
+    if (domNode.hasAttribute("data-cell-highlight")) {
+      formats["cell-highlight"] = domNode.getAttribute("data-cell-highlight");
+    }
+
+    return CELL_ATTRIBUTES.reduce((formats, attribute) => {
+      if (domNode.hasAttribute(attribute)) {
+        formats[attribute] = domNode.getAttribute(attribute);
+      }
+
+      return formats;
+    }, formats);
+  }
+
+  cellOffset() {
+    if (this.parent) {
+      return this.parent.children.indexOf(this);
+    }
+    return -1;
+  }
+
+  formats() {
+    const formats = {};
+
+    if (this.domNode.hasAttribute("data-row")) {
+      formats["row"] = this.domNode.getAttribute("data-row");
+    }
+
+    if (this.domNode.hasAttribute("data-cell-bg")) {
+      formats["cell-bg"] = this.domNode.getAttribute("data-cell-bg");
+    }
+
+    if (this.domNode.hasAttribute("data-cell-highlight")) {
+      formats["cell-highlight"] = this.domNode.getAttribute(
+        "data-cell-highlight"
+      );
+    }
+
+    return CELL_ATTRIBUTES.reduce((formats, attribute) => {
+      if (this.domNode.hasAttribute(attribute)) {
+        formats[attribute] = this.domNode.getAttribute(attribute);
+      }
+
+      return formats;
+    }, formats);
+  }
+
+  toggleAttribute(name, value) {
+    if (value) {
+      this.domNode.setAttribute(name, value);
+    } else {
+      this.domNode.removeAttribute(name);
+    }
+  }
+
+  toggleHighlight() {
+    if (this.domNode.getAttribute("data-cell-highlight")) {
+      this.domNode.setAttribute("data-cell-highlight", "false");
+    } else {
+      this.domNode.setAttribute("data-cell-highlight", "true");
+    }
+  }
+
+  formatChildren(name, value) {
+    this.children.forEach((child) => {
+      child.format(name, value);
+    });
+  }
+
+  format(name, value) {
+    if (CELL_ATTRIBUTES.indexOf(name) > -1) {
+      this.toggleAttribute(name, value);
+      this.formatChildren(name, value);
+    } else if (["row"].indexOf(name) > -1) {
+      this.toggleAttribute(`data-${name}`, value);
+      this.formatChildren(name, value);
+    } else if (name === "cell-bg") {
+      this.toggleAttribute("data-cell-bg", value);
+      this.formatChildren(name, value);
+
+      if (value) {
+        this.domNode.style.backgroundColor = value;
+      } else {
+        this.domNode.style.backgroundColor = "initial";
+      }
+    } else if (name === "cell-highlight") {
+      this.toggleHighlight();
+      this.formatChildren(name, value);
+    } else {
+      super.format(name, value);
+    }
+  }
+
+  // optimize(context) {
+  //   const rowId = this.domNode.getAttribute("data-row");
+
+  //   if (
+  //     this.statics.requiredContainer &&
+  //     !(this.parent instanceof this.statics.requiredContainer)
+  //   ) {
+  //     this.wrap(this.statics.requiredContainer.blotName, {
+  //       row: rowId,
+  //     });
+  //   }
+  //   super.optimize(context);
+  // }
+
+  row() {
+    return this.parent;
+  }
+
+  rowOffset() {
+    if (this.row()) {
+      return this.row().rowOffset();
+    }
+    return -1;
+  }
+
+  table() {
+    return this.row() && this.row().table();
+  }
+}
+TableCellFoot.blotName = "tableFoot";
+TableCellFoot.tagName = "TD";
+
 class TableRow extends Container {
   checkMerge() {
     if (super.checkMerge() && this.next.children.head != null) {
@@ -628,6 +1025,76 @@ class TableHeadRow extends Container {
 TableHeadRow.blotName = "table-head-row";
 TableHeadRow.tagName = "TR";
 
+class TableFootRow extends Container {
+  checkMerge() {
+    if (super.checkMerge() && this.next.children.head != null) {
+      const thisHead = this.children.head.formats();
+      const thisTail = this.children.tail.formats();
+      const nextHead = this.next.children.head.formats();
+      const nextTail = this.next.children.tail.formats();
+
+      return (
+        thisHead.row === thisTail.row &&
+        thisHead.row === nextHead.row &&
+        thisHead.row === nextTail.row
+      );
+    }
+    return false;
+  }
+
+  static create(value) {
+    const node = super.create(value);
+    node.setAttribute("data-row", value.row);
+    return node;
+  }
+
+  formats() {
+    return ["row"].reduce((formats, attrName) => {
+      if (this.domNode.hasAttribute(`data-${attrName}`)) {
+        formats[attrName] = this.domNode.getAttribute(`data-${attrName}`);
+      }
+      return formats;
+    }, {});
+  }
+
+  optimize(context) {
+    // optimize function of ShadowBlot
+    if (
+      this.statics.requiredContainer &&
+      !(this.parent instanceof this.statics.requiredContainer)
+    ) {
+      this.wrap(this.statics.requiredContainer.blotName);
+    }
+
+    // optimize function of ParentBlot
+    // note: modified this optimize function because
+    // TableRow should not be removed when the length of its children was 0
+    this.enforceAllowedChildren();
+    if (this.uiNode != null && this.uiNode !== this.domNode.firstChild) {
+      this.domNode.insertBefore(this.uiNode, this.domNode.firstChild);
+    }
+
+    // optimize function of ContainerBlot
+    if (this.children.length > 0 && this.next != null && this.checkMerge()) {
+      this.next.moveChildren(this);
+      this.next.remove();
+    }
+  }
+
+  rowOffset() {
+    if (this.parent) {
+      return this.parent.children.indexOf(this);
+    }
+    return -1;
+  }
+
+  table() {
+    return this.parent && this.parent.parent;
+  }
+}
+TableFootRow.blotName = "table-foot-row";
+TableFootRow.tagName = "TR";
+
 class TableBody extends Container {}
 TableBody.blotName = "table-body";
 TableBody.tagName = "TBODY";
@@ -635,6 +1102,10 @@ TableBody.tagName = "TBODY";
 class TableHead extends Container {}
 TableHead.blotName = "table-head";
 TableHead.tagName = "THEAD";
+
+class TableFoot extends Container {}
+TableFoot.blotName = "table-foot";
+TableFoot.tagName = "TFOOT";
 
 class TableCol extends Block {
   static create(value) {
@@ -1047,7 +1518,7 @@ class TableContainer extends Container {
           colspan: cellFormats.colspan,
         })
       );
-      const cellLine = this.scroll.create(TableCellLine.blotName, {
+      const cellLine = this.scroll.create(TableCellHeadLine.blotName, {
         row: rId,
         cell: cId,
         colspan: cellFormats.colspan,
@@ -1067,6 +1538,100 @@ class TableContainer extends Container {
     });
 
     body.parent.insertBefore(newTableHead, body);
+
+    // reordering affectedCells
+    affectedCells.sort(sortFunc);
+    return affectedCells;
+  }
+
+  insertFootRow(editorWrapper) {
+    const [body] = this.descendants(TableBody);
+    if (body == null || body.children.head == null) return;
+
+    const tableCells = this.descendants(TableCell);
+    const rId = rowId();
+    const newRow = this.scroll.create(TableFootRow.blotName, {
+      row: rId,
+    });
+    const newTableFoot = this.scroll.create(TableFoot.blotName);
+    let addBelowCells = [];
+    let modifiedCells = [];
+    let affectedCells = [];
+
+    const lastCellRect = getRelativeRect(
+      tableCells[tableCells.length - 1].domNode.getBoundingClientRect(),
+      editorWrapper
+    ); //get the rect of the last cell to add a row after them
+
+    tableCells.forEach((cell) => {
+      const cellRect = getRelativeRect(
+        cell.domNode.getBoundingClientRect(),
+        editorWrapper
+      );
+
+      if (Math.abs(cellRect.y1 - lastCellRect.y1) < ERROR_LIMIT) {
+        addBelowCells.push(cell);
+      } else if (
+        lastCellRect.y1 - cellRect.y > ERROR_LIMIT &&
+        lastCellRect.y1 - cellRect.y1 < -ERROR_LIMIT
+      ) {
+        modifiedCells.push(cell);
+      }
+    });
+
+    // ordered table cells with rect.x, fix error for inserting
+    // new table cell in complicated table with wrong order.
+    const sortFunc = (cellA, cellB) => {
+      let x1 = cellA.domNode.getBoundingClientRect().x;
+      let x2 = cellB.domNode.getBoundingClientRect().x;
+      return x1 - x2;
+    };
+    addBelowCells.sort(sortFunc);
+
+    addBelowCells.forEach((cell) => {
+      const cId = cellId();
+      const cellFormats = cell.formats();
+
+      const tableCell = this.scroll.create(
+        TableCellFoot.blotName,
+        Object.assign({}, CELL_DEFAULT, {
+          row: rId,
+          colspan: cellFormats.colspan,
+        })
+      );
+      const cellLine = this.scroll.create(TableCellFootLine.blotName, {
+        row: rId,
+        cell: cId,
+        colspan: cellFormats.colspan,
+      });
+      const empty = this.scroll.create(Break.blotName);
+      cellLine.appendChild(empty);
+      tableCell.appendChild(cellLine);
+      newRow.appendChild(tableCell);
+      newTableFoot.appendChild(newRow);
+      affectedCells.push(tableCell);
+    });
+
+    modifiedCells.forEach((cell) => {
+      const cellRowspan = parseInt(cell.formats().rowspan, 10);
+      cell.format("rowspan", cellRowspan + 1);
+      affectedCells.push(cell);
+    });
+
+    // const refRow = this.rows().find((row) => {
+    //   let rowRect = getRelativeRect(
+    //     row.domNode.getBoundingClientRect(),
+    //     editorWrapper
+    //   );
+    //   if (isDown) {
+    //     return (
+    //       Math.abs(rowRect.y - lastCellRect.y - lastCellRect.height) < ERROR_LIMIT
+    //     );
+    //   } else {
+    //     return Math.abs(rowRect.y - lastCellRect.y) < ERROR_LIMIT;
+    //   }
+    // });
+    body.parent.appendChild(newTableFoot);
 
     // reordering affectedCells
     affectedCells.sort(sortFunc);
@@ -1295,14 +1860,25 @@ TableViewWrapper.tagName = "DIV";
 TableViewWrapper.allowedChildren = [TableContainer];
 TableContainer.requiredContainer = TableViewWrapper;
 
-TableContainer.allowedChildren = [TableBody, TableColGroup, TableHead];
+TableContainer.allowedChildren = [
+  TableBody,
+  TableColGroup,
+  TableHead,
+  TableFoot,
+];
 TableBody.requiredContainer = TableContainer;
 
 TableHead.allowedChildren = [TableHeadRow];
 TableHead.requiredContainer = TableContainer;
 
+TableFoot.allowedChildren = [TableFootRow];
+TableFoot.requiredContainer = TableContainer;
+
 TableHeadRow.allowedChildren = [TableCellHead];
 TableHeadRow.requiredContainer = TableHead;
+
+TableFootRow.allowedChildren = [TableCellFoot];
+TableFootRow.requiredContainer = TableFoot;
 
 TableBody.allowedChildren = [TableRow];
 TableRow.requiredContainer = TableBody;
@@ -1313,7 +1889,11 @@ TableCell.requiredContainer = TableRow;
 TableCell.allowedChildren = [TableCellLine, Header];
 TableCellLine.requiredContainer = TableCell;
 
-TableCellHead.allowedChildren = [TableCellLine, Header];
+TableCellHead.allowedChildren = [TableCellHeadLine, Header];
+TableCellHeadLine.requiredContainer = TableCellHead;
+
+TableCellFoot.allowedChildren = [TableCellFootLine, Header];
+TableCellFootLine.requiredContainer = TableCellFoot;
 
 TableColGroup.allowedChildren = [TableCol];
 TableColGroup.requiredContainer = TableContainer;
@@ -1343,6 +1923,11 @@ export {
   TableContainer,
   TableViewWrapper,
   TableHeadRow,
+  TableCellHeadLine,
+  TableCellFoot,
+  TableCellFootLine,
+  TableFootRow,
+  TableFoot,
   // identity getters
   rowId,
   cellId,

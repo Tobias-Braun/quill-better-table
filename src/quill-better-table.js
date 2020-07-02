@@ -29,6 +29,11 @@ import {
   TableHead,
   TableHeadRow,
   TableCellHead,
+  TableCellHeadLine,
+  TableCellFoot,
+  TableCellFootLine,
+  TableFootRow,
+  TableFoot,
 } from "./formats/table";
 
 class BetterTable extends Module {
@@ -45,6 +50,11 @@ class BetterTable extends Module {
     Quill.register(TableViewWrapper, true);
     Quill.register(TableViewWrapper, true);
     Quill.register(TableHeadRow, true);
+    Quill.register(TableCellHeadLine, true);
+    Quill.register(TableCellFoot, true);
+    Quill.register(TableCellFootLine, true);
+    Quill.register(TableFootRow, true);
+    Quill.register(TableFoot, true);
     // register customized Header，overwriting quill built-in Header
     // Quill.register('formats/header', Header, true);
   }
