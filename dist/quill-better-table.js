@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "a8fdf3956ec4e6a05e64";
+/******/ 	var hotCurrentHash = "3f9a03fcb00e88bad851";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -883,19 +883,19 @@ module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg c
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 336.64h526.628572v43.885714H73.142857zM73.142857 643.657143h526.628572v43.885714H73.142857zM336.457143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857h-219.428571v877.714286h219.428571a131.657143 131.657143 0 0 0 131.657143-131.657143V204.8A131.84 131.84 0 0 0 819.2 73.142857z m44.068571 460.982857h-65.828571v65.828572H753.371429v-65.828572h-65.828572V490.057143h65.828572v-65.828572h44.068571v65.828572h65.828571z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v44.068571H73.142857zM336.64 117.028571h43.885714v526.628572h-43.885714z m307.017143 0h44.068571v526.628572H643.657143zM73.142857 599.771429v219.428571a131.657143 131.657143 0 0 0 131.657143 131.657143h614.4a131.657143 131.657143 0 0 0 131.657143-131.657143v-219.428571z m526.628572 197.485714h-65.645715v65.828571H490.057143v-65.828571h-65.828572v-43.885714h65.828572v-65.828572h44.068571v65.828572h65.645715z\"/></svg>";
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M380.342857 336.457143h526.811429v43.885714H380.342857z m0 307.2h526.811429v43.885714H380.342857zM643.657143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.582857A131.474286 131.474286 0 0 1 950.857143 204.8v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.588571 87.771429v614.4a87.588571 87.588571 0 0 0 87.588571 87.771429h614.582857a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM204.8 73.142857A131.657143 131.657143 0 0 0 73.142857 204.8v614.4a131.657143 131.657143 0 0 0 131.657143 131.657143h219.428571V73.142857z m131.84 460.8h-65.828571v65.828572h-43.885715v-65.828572h-65.828571v-43.885714h65.828571v-65.828572h43.885715v65.828572h65.828571z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M73.142857 336.64h526.628572v43.885714H73.142857zM73.142857 643.657143h526.628572v43.885714H73.142857zM336.457143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM819.2 73.142857h-219.428571v877.714286h219.428571a131.657143 131.657143 0 0 0 131.657143-131.657143V204.8A131.84 131.84 0 0 0 819.2 73.142857z m44.068571 460.982857h-65.828571v65.828572H753.371429v-65.828572h-65.828572V490.057143h65.828572v-65.828572h44.068571v65.828572h65.828571z\"/></svg>";
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
-module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M204.8 73.142857h614.4a131.657143 131.657143 0 0 1 131.657143 131.657143v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.84 131.84 0 0 1 204.8 73.142857z m0 43.885714a87.771429 87.771429 0 0 0-87.771429 87.771429v614.4a87.771429 87.771429 0 0 0 87.771429 87.771429h614.4a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM73.142857 336.457143h877.714286v44.068571H73.142857zM336.64 117.028571h43.885714v526.628572h-43.885714z m307.017143 0h44.068571v526.628572H643.657143zM73.142857 599.771429v219.428571a131.657143 131.657143 0 0 0 131.657143 131.657143h614.4a131.657143 131.657143 0 0 0 131.657143-131.657143v-219.428571z m526.628572 197.485714h-65.645715v65.828571H490.057143v-65.828571h-65.828572v-43.885714h65.828572v-65.828572h44.068571v65.828572h65.645715z\"/></svg>";
+module.exports = "<?xml version=\"1.0\" standalone=\"no\"?><!doctype html><svg class=icon width=20px height=20.00px viewBox=\"0 0 1024 1024\" version=1.1 xmlns=http://www.w3.org/2000/svg><path fill=#595959 d=\"M380.342857 336.457143h526.811429v43.885714H380.342857z m0 307.2h526.811429v43.885714H380.342857zM643.657143 117.028571h43.885714v789.942858h-43.885714zM204.8 73.142857h614.582857A131.474286 131.474286 0 0 1 950.857143 204.8v614.4a131.657143 131.657143 0 0 1-131.657143 131.657143H204.8A131.657143 131.657143 0 0 1 73.142857 819.2V204.8A131.657143 131.657143 0 0 1 204.8 73.142857z m0 43.885714a87.588571 87.588571 0 0 0-87.588571 87.771429v614.4a87.588571 87.588571 0 0 0 87.588571 87.771429h614.582857a87.771429 87.771429 0 0 0 87.771429-87.771429V204.8a87.771429 87.771429 0 0 0-87.771429-87.771429zM204.8 73.142857A131.657143 131.657143 0 0 0 73.142857 204.8v614.4a131.657143 131.657143 0 0 0 131.657143 131.657143h219.428571V73.142857z m131.84 460.8h-65.828571v65.828572h-43.885715v-65.828572h-65.828571v-43.885714h65.828571v-65.828572h43.885715v65.828572h65.828571z\"/></svg>";
 
 /***/ }),
 /* 5 */
@@ -3249,11 +3249,11 @@ function computeBoundaryFromRects(startRect, endRect) {
   };
 }
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_1.svg
-var icon_operation_1 = __webpack_require__(2);
+var icon_operation_1 = __webpack_require__(3);
 var icon_operation_1_default = /*#__PURE__*/__webpack_require__.n(icon_operation_1);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_2.svg
-var icon_operation_2 = __webpack_require__(3);
+var icon_operation_2 = __webpack_require__(4);
 var icon_operation_2_default = /*#__PURE__*/__webpack_require__.n(icon_operation_2);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_3.svg
@@ -3261,7 +3261,7 @@ var icon_operation_3 = __webpack_require__(1);
 var icon_operation_3_default = /*#__PURE__*/__webpack_require__.n(icon_operation_3);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_4.svg
-var icon_operation_4 = __webpack_require__(4);
+var icon_operation_4 = __webpack_require__(2);
 var icon_operation_4_default = /*#__PURE__*/__webpack_require__.n(icon_operation_4);
 
 // EXTERNAL MODULE: ./src/assets/icons/icon_operation_5.svg
@@ -3355,6 +3355,19 @@ const MENU_ITEMS_DEFAULT = {
     }
 
   },
+  insertRowDown: {
+    text: "Insert row down",
+    iconSrc: icon_operation_4_default.a,
+
+    handler() {
+      const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
+      const affectedCells = tableContainer.insertRow(this.boundary, true, this.quill.root.parentNode);
+      this.quill.update(external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.USER);
+      this.quill.setSelection(this.quill.getIndex(affectedCells[0]), 0, external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.SILENT);
+      this.tableSelection.setSelection(affectedCells[0].domNode.getBoundingClientRect(), affectedCells[0].domNode.getBoundingClientRect());
+    }
+
+  },
   insertHeader: {
     text: "Insert Header Row",
     iconSrc: icon_operation_3_default.a,
@@ -3370,24 +3383,11 @@ const MENU_ITEMS_DEFAULT = {
   },
   insertFooter: {
     text: "Insert Footer Row",
-    iconSrc: icon_operation_3_default.a,
-
-    handler() {
-      const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
-      const affectedCells = tableContainer.insertFootRow(this.quill.root.parentNode);
-      this.quill.update(external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.USER);
-      this.quill.setSelection(this.quill.getIndex(affectedCells[0]), 0, external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.SILENT);
-      this.tableSelection.setSelection(affectedCells[0].domNode.getBoundingClientRect(), affectedCells[0].domNode.getBoundingClientRect());
-    }
-
-  },
-  insertRowDown: {
-    text: "Insert row down",
     iconSrc: icon_operation_4_default.a,
 
     handler() {
       const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
-      const affectedCells = tableContainer.insertRow(this.boundary, true, this.quill.root.parentNode);
+      const affectedCells = tableContainer.insertFootRow(this.quill.root.parentNode);
       this.quill.update(external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.USER);
       this.quill.setSelection(this.quill.getIndex(affectedCells[0]), 0, external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.sources.SILENT);
       this.tableSelection.setSelection(affectedCells[0].domNode.getBoundingClientRect(), affectedCells[0].domNode.getBoundingClientRect());
