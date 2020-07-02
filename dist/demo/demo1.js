@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "3f9a03fcb00e88bad851";
+/******/ 	var hotCurrentHash = "12a0c38e61e343bf9bbd";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -3144,7 +3144,7 @@ class table_selection_TableSelection {
 
   computeSelectedTds() {
     const tableContainer = external_commonjs_quill_commonjs2_quill_amd_quill_root_Quill_default.a.find(this.table);
-    const tableCells = [...tableContainer.descendants(TableCell), ...tableContainer.descendants(TableCellHead)];
+    const tableCells = [...tableContainer.descendants(TableCell), ...tableContainer.descendants(TableCellHead), ...tableContainer.descendants(TableCellFoot)];
     return tableCells.reduce((selectedCells, tableCell) => {
       let {
         x,

@@ -1,6 +1,6 @@
 import Quill from "quill";
 import { css, getRelativeRect } from "../utils";
-import { TableCell, TableCellHead } from "../formats/table";
+import { TableCell, TableCellHead, TableCellFoot } from "../formats/table";
 
 const PRIMARY_COLOR = "#0589f3";
 const LINE_POSITIONS = ["left", "right", "top", "bottom"];
@@ -115,6 +115,7 @@ export default class TableSelection {
     const tableCells = [
       ...tableContainer.descendants(TableCell),
       ...tableContainer.descendants(TableCellHead),
+      ...tableContainer.descendants(TableCellFoot),
     ];
 
     return tableCells.reduce((selectedCells, tableCell) => {
