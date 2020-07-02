@@ -635,7 +635,7 @@ class TableCellHead extends Container {
   }
 
   toggleHighlight() {
-    if (this.domNode.getAttribute("data-cell-highlight")) {
+    if (this.domNode.getAttribute("data-cell-highlight") == "true") {
       this.domNode.setAttribute("data-cell-highlight", "false");
     } else {
       this.domNode.setAttribute("data-cell-highlight", "true");
@@ -816,7 +816,7 @@ class TableCellFoot extends Container {
   }
 
   toggleHighlight() {
-    if (this.domNode.getAttribute("data-cell-highlight")) {
+    if (this.domNode.getAttribute("data-cell-highlight") == "true") {
       this.domNode.setAttribute("data-cell-highlight", "false");
     } else {
       this.domNode.setAttribute("data-cell-highlight", "true");
@@ -1650,9 +1650,6 @@ class TableContainer extends Container {
     let addBelowCells = [];
     let modifiedCells = [];
     let affectedCells = [];
-
-    console.log("body", body);
-    console.log("cell", tableCells);
 
     tableCells.forEach((cell) => {
       const cellRect = getRelativeRect(

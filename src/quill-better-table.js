@@ -123,7 +123,8 @@ class BetterTable extends Module {
         const cellNode = path.filter((node) => {
           return (
             node.tagName &&
-            node.tagName.toUpperCase() === "TD" &&
+            (node.tagName.toUpperCase() === "TD" ||
+              node.tagName.toUpperCase() === "TH") &&
             node.getAttribute("data-row")
           );
         })[0];

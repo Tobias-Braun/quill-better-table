@@ -46,6 +46,10 @@ table.quill-better-table {
     border: 2px solid green;
   }
 
+  th[data-cell-highlight="true"] {
+    border: 2px solid green;
+  }
+
   th {
     border-bottom: 2px solid black;
   }
