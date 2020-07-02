@@ -116,6 +116,29 @@ const MENU_ITEMS_DEFAULT = {
     },
   },
 
+  insertRowDown: {
+    text: "Insert row down",
+    iconSrc: operationIcon4,
+    handler() {
+      const tableContainer = Quill.find(this.table);
+      const affectedCells = tableContainer.insertRow(
+        this.boundary,
+        true,
+        this.quill.root.parentNode
+      );
+      this.quill.update(Quill.sources.USER);
+      this.quill.setSelection(
+        this.quill.getIndex(affectedCells[0]),
+        0,
+        Quill.sources.SILENT
+      );
+      this.tableSelection.setSelection(
+        affectedCells[0].domNode.getBoundingClientRect(),
+        affectedCells[0].domNode.getBoundingClientRect()
+      );
+    },
+  },
+
   insertHeader: {
     text: "Insert Header Row",
     iconSrc: operationIcon3,
@@ -139,33 +162,10 @@ const MENU_ITEMS_DEFAULT = {
 
   insertFooter: {
     text: "Insert Footer Row",
-    iconSrc: operationIcon3,
-    handler() {
-      const tableContainer = Quill.find(this.table);
-      const affectedCells = tableContainer.insertFootRow(
-        this.quill.root.parentNode
-      );
-      this.quill.update(Quill.sources.USER);
-      this.quill.setSelection(
-        this.quill.getIndex(affectedCells[0]),
-        0,
-        Quill.sources.SILENT
-      );
-      this.tableSelection.setSelection(
-        affectedCells[0].domNode.getBoundingClientRect(),
-        affectedCells[0].domNode.getBoundingClientRect()
-      );
-    },
-  },
-
-  insertRowDown: {
-    text: "Insert row down",
     iconSrc: operationIcon4,
     handler() {
       const tableContainer = Quill.find(this.table);
-      const affectedCells = tableContainer.insertRow(
-        this.boundary,
-        true,
+      const affectedCells = tableContainer.insertFootRow(
         this.quill.root.parentNode
       );
       this.quill.update(Quill.sources.USER);
